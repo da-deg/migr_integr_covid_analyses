@@ -14,7 +14,7 @@ global WD "${root}/Papers/2021_integration_paper_PNAS/work/Analyses"
 global INPUT "${root}/Datasets/20231121_ENTRA_SCIP/harmonized_data"									// input data path
 global OUTPUT "${WD}/figures_tables"												// define the working directory (= root)
 
-cd ${WD}
+cd "${WD}"
 
 capture mkdir "${OUTPUT}"
 
