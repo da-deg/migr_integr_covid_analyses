@@ -1,29 +1,22 @@
-/*
-program:    		02_analyses_main_models.do
-project:    		ENTRA SCIP Article
-author:     		Daniel Degen
-date:       		03. June 2023 (first version in 2021)
-task:       		Calculate Difference-in-Difference Models
-
-*/
-
-*Task 0: setup
 clear all
 macro drop all
-
-cd "/home/daniel/Dokumente/University/Papers/2021 integration papier PNAS/work/2023-05-06 Paper/Analyses/do-files"
-capture log close
-
 version 17.0
 clear all
 set linesize 120
 set more off
+capture log close
 
 
-cd "/home/daniel/Dokumente/University/Datasets/ENTRA_SCIP"										// change working directory (= root)
-global WD "/home/daniel/Dokumente/University/Papers/2021 integration papier PNAS/work/2023-05-06 Paper"					// define the working directory (= root)
-global INPUT "/home/daniel/Dokumente/University/Datasets/ENTRA_SCIP_update"									// input data path
-global OUTPUT "${WD}/Analyses_update/figures_tables"	// define the working directory (= root)
+
+global root "/home/daniel/Dokumente/University/"
+
+global WD "${root}/Papers/2021_integration_paper_PNAS/work/Analyses"
+global INPUT "${root}/Datasets/20231121_ENTRA_SCIP/harmonized_data"									// input data path
+global OUTPUT "${WD}/figures_tables"												// define the working directory (= root)
+
+capture mkdir "${OUTPUT}"
+
+cd ${WD}
 
 *Define Figure Style
 *Graph Settings
@@ -55,52 +48,51 @@ graph set window fontface "Arial"
 
 
 *Load Dataset
-use "${INPUT}/03_output_data/entra-scip-final_sample.dta", clear
-
+use "${INPUT}/entra-scip-final_sample.dta", clear
+drop if panel==0
 gen ATT = data*wave
-lab var ATT "no controls"
+lab var ATT "No controls"
 gen ATT2 = ATT
-lab var ATT2 "controls"
-
+lab var ATT2 "Controls"
 * Calculate Difference-in-Difference Models
 
 reg language ATT i.data i.wave if group==0, cluster(id)
 est store language1
 
-reg language ATT2 i.data i.wave sex age time_in_germany i.isced stay if group==0, cluster(id)
+reg language ATT2 i.data i.wave sex age time_in_germany i.isced lang_int_course stay reas_economic reas_education reas_family reas_political  if group==0, cluster(id)
 est store language2
 
 reg pol_rc ATT i.data i.wave if group==0, cluster(id)
 est store pol_rc1
 
-reg pol_rc ATT2 i.data i.wave sex age time_in_germany i.isced stay if group==0, cluster(id)
+reg pol_rc ATT2 i.data i.wave sex age time_in_germany i.isced lang_int_course stay reas_economic reas_education reas_family reas_political  if group==0, cluster(id)
 est store pol_rc2
  
 reg spendtime_rc ATT i.data i.wave if group==0, cluster(id)
 est store spendtime_rc1
 
-reg spendtime_rc ATT2 i.data i.wave sex age time_in_germany i.isced stay if group==0, cluster(id)
+reg spendtime_rc ATT2 i.data i.wave sex age time_in_germany i.isced lang_int_course stay reas_economic reas_education reas_family reas_political  if group==0, cluster(id)
 est store spendtime_rc2
  
 reg unemployed ATT i.data i.wave if group==0, cluster(id)
 est store unemployed1
 
-reg unemployed ATT2 i.data i.wave sex age time_in_germany i.isced stay if group==0, cluster(id)
+reg unemployed ATT2 i.data i.wave sex age time_in_germany i.isced lang_int_course stay reas_economic reas_education reas_family reas_political  if group==0, cluster(id)
 est store unemployed2 
 
-coefplot (language1 language2, asequation({bf:German Language Skills}) \ /// 
+coefplot (language1 language2, asequation({bf:German language skills}) \ /// 
 	spendtime_rc1 spendtime_rc2, asequation({bf:Time spent with Germans}) \ /// 
 	pol_rc1 pol_rc2, asequation({bf:Interest in German politics}) \ /// 
 	unemployed1 unemployed2, asequation({bf:Unemployment}))  ///
 	, eqlabels(, asheadings ) /// 
 	keep(*ATT*) xline(0) ///
 	title("A", pos(12) xoffset(-58.5) yoffset(1.8) size(vhuge)) ///
-	subtitle("Polish Subsample", size(large)) ///
+	subtitle("Polish subsample", size(large)) ///
 	mcolor("black") ///
 	msymbol(X) ///
 	levels(99.9 99 95) ///
 	ciopts(recast(rcap) lwidth(*1 *2 *4) pstyle("___")) /// 
-	legend(region(col(white)) title("Confidence Intervals", size(small)) order(1 "99.9% (***)" 2 "99% (**)" 3 "95% (*)") rows(1) position(7)) ///
+	legend(region(col(white)) title("Confidence intervals", size(small)) order(1 "99.9% (***)" 2 "99% (**)" 3 "95% (*)") rows(1) position(7)) ///
 	xlab(-0.2 -0.1 0 0.1 0.2) xscale(range(-0.25 0.25)) ///
 	ylab(,labcolor("black")) ///
 	graphregion(fcolor(white) lcolor(white)) ///
@@ -119,40 +111,40 @@ Differences in integration trajectories under pandemic and non-pandemic times fo
 reg language ATT i.data i.wave if group==1, cluster(id)
 est store language3
 
-reg language ATT2 i.data i.wave sex age time_in_germany i.isced stay if group==1, cluster(id)
+reg language ATT2 i.data i.wave sex age time_in_germany i.isced lang_int_course stay reas_economic reas_education reas_family reas_political  if group==1, cluster(id)
 est store language4
 
 reg pol_rc ATT i.data i.wave if group==1, cluster(id)
 est store pol_rc3
 
-reg pol_rc ATT2 i.data i.wave sex age time_in_germany i.isced stay if group==1, cluster(id)
+reg pol_rc ATT2 i.data i.wave sex age time_in_germany i.isced lang_int_course stay reas_economic reas_education reas_family reas_political if group==1, cluster(id)
 est store pol_rc4
  
 reg spendtime_rc ATT i.data i.wave if group==1, cluster(id)
 est store spendtime_rc3
 
-reg spendtime_rc ATT2 i.data i.wave sex age time_in_germany i.isced stay if group==1, cluster(id)
+reg spendtime_rc ATT2 i.data i.wave sex age time_in_germany i.isced lang_int_course stay reas_economic reas_education reas_family reas_political if group==1, cluster(id)
 est store spendtime_rc4
  
 reg unemployed ATT i.data i.wave if group==1, cluster(id)
 est store unemployed3 
 
-reg unemployed ATT2 i.data i.wave sex age time_in_germany i.isced stay if group==1, cluster(id)
+reg unemployed ATT2 i.data i.wave sex age time_in_germany i.isced lang_int_course stay reas_economic reas_education reas_family reas_political if group==1, cluster(id)
 est store unemployed4 
 	
-coefplot (language3 language4, asequation({bf:German Language Skills}) \ /// 
+coefplot (language3 language4, asequation({bf:German language skills}) \ /// 
 	spendtime_rc3 spendtime_rc4, asequation({bf:Time spent with Germans}) \ /// 
 	pol_rc3 pol_rc4, asequation({bf:Interest in German politics}) \ /// 
 	unemployed3 unemployed4, asequation({bf:Unemployment}))  ///
 	, eqlabels(, asheadings ) /// 
 	keep(*ATT*) xline(0) ///
 	title("B", pos(12) xoffset(-58.5) yoffset(1.8) size(vhuge)) ///
-	subtitle("Turkish Subsample", size(large)) ///
+	subtitle("Turkish subsample", size(large)) ///
 	mcolor("black") ///
 	msymbol(X) ///
 	levels(99.9 99 95) ///
 	ciopts(recast(rcap) lwidth(*1 *2 *4) pstyle("___")) /// 
-	legend(region(col(white)) title("Confidence Intervals", size(small)) order(1 "99.9% (***)" 2 "99% (**)" 3 "95% (*)") rows(1) position(7)) ///
+	legend(region(col(white)) title("Confidence intervals", size(small)) order(1 "99.9% (***)" 2 "99% (**)" 3 "95% (*)") rows(1) position(7)) ///
 	xlab(-0.2 -0.1 0 0.1 0.2) xscale(range(-0.25 0.25)) ///
 	ylab(,labcolor("black")) ///
 	graphregion(fcolor(white) lcolor(white)) ///
@@ -164,40 +156,66 @@ coefplot (language3 language4, asequation({bf:German Language Skills}) \ ///
 graph combine g1 g2 ,  name(combined, replace) imargin(4 4 4 4) 
 graph display combined, xsize(6) ysize(3) 
 graph export "${OUTPUT}/figure02.pdf", replace
+graph export "${OUTPUT}/figure02.svg", replace
+graph export "${OUTPUT}/figure02.png", replace width(6144) height(3072)
 
 lab def data 1 "ENTRA (Ref: SCIP)", replace
 lab def wave 1 "Wave 2 (Ref: Wave 1)", replace
 lab var ATT "Interaction: data*wave"
 
 
+reg language ATT i.data i.wave if group==0, cluster(id)
+est store language1
+
+reg language ATT i.data i.wave sex age time_in_germany i.isced lang_int_course stay reas_economic reas_education reas_family reas_political if group==0, cluster(id)
+est store language2
+
+reg pol_rc ATT i.data i.wave if group==0, cluster(id)
+est store pol_rc1
+
+reg pol_rc ATT i.data i.wave sex age time_in_germany i.isced lang_int_course stay reas_economic reas_education reas_family reas_political if group==0, cluster(id)
+est store pol_rc2
+ 
+reg spendtime_rc ATT i.data i.wave if group==0, cluster(id)
+est store spendtime_rc1
+
+reg spendtime_rc ATT i.data i.wave sex age time_in_germany i.isced lang_int_course stay reas_economic reas_education reas_family reas_political if group==0, cluster(id)
+est store spendtime_rc2
+ 
+reg unemployed ATT i.data i.wave if group==0, cluster(id)
+est store unemployed1 
+
+reg unemployed ATT i.data i.wave sex age time_in_germany i.isced lang_int_course stay reas_economic reas_education reas_family reas_political if group==0, cluster(id)
+est store unemployed2 
+
 
 
 reg language ATT i.data i.wave if group==1, cluster(id)
 est store language3
 
-reg language ATT i.data i.wave sex age time_in_germany i.isced stay if group==1, cluster(id)
+reg language ATT i.data i.wave sex age time_in_germany i.isced lang_int_course stay reas_economic reas_education reas_family reas_political if group==1, cluster(id)
 est store language4
 
 reg pol_rc ATT i.data i.wave if group==1, cluster(id)
 est store pol_rc3
 
-reg pol_rc ATT i.data i.wave sex age time_in_germany i.isced stay if group==1, cluster(id)
+reg pol_rc ATT i.data i.wave sex age time_in_germany i.isced lang_int_course stay reas_economic reas_education reas_family reas_political if group==1, cluster(id)
 est store pol_rc4
  
 reg spendtime_rc ATT i.data i.wave if group==1, cluster(id)
 est store spendtime_rc3
 
-reg spendtime_rc ATT i.data i.wave sex age time_in_germany i.isced stay if group==1, cluster(id)
+reg spendtime_rc ATT i.data i.wave sex age time_in_germany i.isced lang_int_course stay reas_economic reas_education reas_family reas_political if group==1, cluster(id)
 est store spendtime_rc4
  
 reg unemployed ATT i.data i.wave if group==1, cluster(id)
 est store unemployed3 
 
-reg unemployed ATT i.data i.wave sex age time_in_germany i.isced stay if group==1, cluster(id)
+reg unemployed ATT i.data i.wave sex age time_in_germany i.isced lang_int_course stay reas_economic reas_education reas_family reas_political if group==1, cluster(id)
 est store unemployed4 
 
 
-esttab language1 language2 spendtime_rc1 spendtime_rc2 pol_rc1 pol_rc2 unemployed1 unemployed2 using "${OUTPUT}/figure02_table_poles.xls", delimiter(;) ///
+esttab language1 language2 spendtime_rc1 spendtime_rc2 pol_rc1 pol_rc2 unemployed1 unemployed2 using "${OUTPUT}/SI Appendix Table S1.xls", delimiter(;) ///
 	varwidth(30) modelwidth(30) ///
 	drop(0*) label nonumbers ///
 	b(2) r2(3) ///
@@ -207,7 +225,7 @@ esttab language1 language2 spendtime_rc1 spendtime_rc2 pol_rc1 pol_rc2 unemploye
 	
 
 *Turks
-esttab language3 language4 spendtime_rc3 spendtime_rc4 pol_rc3 pol_rc4 unemployed3 unemployed4 using "${OUTPUT}/figure02_table_turks.xls", delimiter(;) ///
+esttab language3 language4 spendtime_rc3 spendtime_rc4 pol_rc3 pol_rc4 unemployed3 unemployed4  using "${OUTPUT}/SI Appendix Table S2.xls", delimiter(;) ///
 	varwidth(30) modelwidth(30) ///
 	drop(0*) label nonumbers ///
 	b(2) r2(3) ///
