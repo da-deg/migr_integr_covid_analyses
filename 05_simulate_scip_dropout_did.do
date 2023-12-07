@@ -12,14 +12,8 @@ global WD "${root}/Papers/2021_integration_paper_PNAS/work/Analyses"
 global INPUT "${root}/Datasets/20231121_ENTRA_SCIP/harmonized_data"									// input data path
 global OUTPUT "${WD}/simulated_data"												// define the working directory (= root)
 
-cd ${WD}
+cd "${WD}"
 capture log close
-
-version 17.0
-clear all
-set linesize 120
-set more off
-
 
 
 *Define Figure Style
