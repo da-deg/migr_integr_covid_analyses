@@ -13,14 +13,8 @@ global OUTPUT "${root}Papers/2021_integration_paper_PNAS/work/Analyses/figures_t
 
 capture mkdir "${OUTPUT}"
 
-cd ${WD}
+cd "${WD}"
 capture log close
-
-version 17.0
-clear all
-set linesize 120
-set more off
-
 
 
 *Define Figure Style
