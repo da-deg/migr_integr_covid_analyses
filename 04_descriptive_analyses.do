@@ -1,29 +1,23 @@
-/*
-program:    		04_descriptive_analyses.do
-project:    		ENTRA SCIP Article
-author:     		Daniel Degen
-date:       		03. June 2023 (first version in 2021)
-task:       		Descriptive Change between panel waves and between datasets
-
-*/
-
-*Task 0: setup
 clear all
 macro drop all
-
-cd "/home/daniel/Dokumente/University/Papers/2021 integration papier PNAS/work/2023-05-06 Paper/Analyses/do-files"
-capture log close
-
 version 17.0
 clear all
 set linesize 120
 set more off
+capture log close
 
 
-cd "/home/daniel/Dokumente/University/Datasets/ENTRA_SCIP"										// change working directory (= root)
-global WD "/home/daniel/Dokumente/University/Papers/2021 integration papier PNAS/work/2023-05-06 Paper"					// define the working directory (= root)
-global INPUT "/home/daniel/Dokumente/University/Datasets/ENTRA_SCIP_update"									// input data path
-global OUTPUT "${WD}/Analyses_update/figures_tables"	// define the working directory (= root)
+
+global root "/home/daniel/Dokumente/University/"
+
+global WD "${root}/Papers/2021_integration_paper_PNAS/work/Analyses"
+global INPUT "${root}/Datasets/20231121_ENTRA_SCIP/harmonized_data"									// input data path
+global OUTPUT "${WD}/figures_tables"												// define the working directory (= root)
+
+capture mkdir "${OUTPUT}"
+
+cd ${WD}
+
 
 *Define Figure Style
 *Graph Settings
@@ -55,8 +49,8 @@ graph set window fontface "Arial"
 
 
 *Load Dataset
-use "${INPUT}/03_output_data/entra-scip-final_sample.dta", clear
-
+use "${INPUT}/entra-scip-final_sample.dta", clear
+drop if panel==0
 
 
 gen ATT = data*wave
@@ -67,18 +61,18 @@ lab var ATT2 "controls"
 * Calculate Difference-in-Difference Models
 
 *Poles
-reg language i.data##i.wave sex age time_in_germany i.isced stay if group==0, cluster(id)
+reg language i.data##i.wave if group==0, cluster(id)
 est store language1
 margins wave#data 
 marginsplot, ///
 	title("A", pos(12) xoffset(-30) yoffset(-4) size(huge)) ///
-	ytitle("") subtitle("Language Skills") ///
+	ytitle("") subtitle("German language skills") ///
 	legend(region(col(white)) size(vsmall)) ///
 	plotopts(msize(medium)) ///
 	name(language1, replace) nodraw
 
 
-reg spendtime_rc i.data##i.wave sex age time_in_germany i.isced stay if group==0, cluster(id)
+reg spendtime_rc i.data##i.wave if group==0, cluster(id)
 est store spendtime_rc1
 margins wave#data 
 marginsplot, ///
@@ -89,7 +83,7 @@ marginsplot, ///
 	name(spendtime_rc1, replace) nodraw
 
 
-reg pol_rc i.data##i.wave sex age time_in_germany i.isced stay if group==0, cluster(id)
+reg pol_rc i.data##i.wave if group==0, cluster(id)
 est store pol_rc1
 margins wave#data 
 marginsplot, ///
@@ -100,7 +94,7 @@ marginsplot, ///
 	name(pol_rc1, replace) nodraw
 
 
-reg unemployed i.data##i.wave sex age time_in_germany i.isced stay if group==0, cluster(id)
+reg unemployed i.data##i.wave if group==0, cluster(id)
 est store unemployed1
 margins wave#data 
 marginsplot, ///
@@ -113,18 +107,18 @@ marginsplot, ///
 
 *Turks
 
-reg language i.data##i.wave sex age time_in_germany i.isced stay if group==1, cluster(id)
+reg language i.data##i.wave if group==1, cluster(id)
 est store language2
 margins wave#data 
 marginsplot, ///
 	title("A", pos(12) xoffset(-30) yoffset(-4) size(huge)) ///
-	ytitle("") subtitle("Language Skills") ///
+	ytitle("") subtitle("German language skills") ///
 	legend(region(col(white)) size(vsmall)) ///
 	plotopts(msize(medium)) ///
 	name(language2, replace) nodraw
 
 
-reg spendtime_rc i.data##i.wave sex age time_in_germany i.isced stay if group==1, cluster(id)
+reg spendtime_rc i.data##i.wave if group==1, cluster(id)
 est store spendtime_rc2
 margins wave#data 
 marginsplot, ///
@@ -135,7 +129,7 @@ marginsplot, ///
 	name(spendtime_rc2, replace) nodraw
 
 
-reg pol_rc i.data##i.wave sex age time_in_germany i.isced stay if group==1, cluster(id)
+reg pol_rc i.data##i.wave if group==1, cluster(id)
 est store pol_rc2
 margins wave#data 
 marginsplot, ///
@@ -146,7 +140,7 @@ marginsplot, ///
 	name(pol_rc2, replace) nodraw
 
 
-reg unemployed i.data##i.wave sex age time_in_germany i.isced stay if group==1, cluster(id)
+reg unemployed i.data##i.wave if group==1, cluster(id)
 est store unemployed2
 margins wave#data 
 marginsplot, ///
@@ -154,15 +148,18 @@ marginsplot, ///
 	ytitle("") subtitle("Unemployment") ///
 	legend(region(col(white)) size(vsmall)) ///
 	plotopts(msize(medium)) ///
-	name(unemployed2, replace) nodraw
+	name(unemployed2, replace) nodraw 
 
 
 
-
-graph combine language1 spendtime_rc1 pol_rc1 unemployed1, name(combined1, replace) imargin(4 4 4 4) title(Polish Subsample)
+graph combine language1 spendtime_rc1 pol_rc1 unemployed1, name(combined1, replace) imargin(4 4 4 4) title(Polish subsample) note("Point estimates including 95% confidence intervals", size(vsmall))
 graph display combined1, xsize(6) ysize(4) 
-graph export "${OUTPUT}/figure05.pdf", replace
+graph export "${OUTPUT}/SI Appendix Fig S1.pdf", replace
+graph export "${OUTPUT}/SI Appendix Fig S1.svg", replace
+graph export "${OUTPUT}/SI Appendix Fig S1.png", replace width(6144) height(4096)
 
-graph combine language2 spendtime_rc2 pol_rc2 unemployed2, name(combined2, replace) imargin(4 4 4 4) title(Turkish Subsample)
+graph combine language2 spendtime_rc2 pol_rc2 unemployed2, name(combined2, replace) imargin(4 4 4 4) title(Turkish subsample) note("Point estimates including 95% confidence intervals", size(vsmall))
 graph display combined2, xsize(6) ysize(4) 
-graph export "${OUTPUT}/figure06.pdf", replace
+graph export "${OUTPUT}/SI Appendix Fig S2.pdf", replace
+graph export "${OUTPUT}/SI Appendix Fig S2.svg", replace
+graph export "${OUTPUT}/SI Appendix Fig S2.png", replace width(6144) height(4096)
