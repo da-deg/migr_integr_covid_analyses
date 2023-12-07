@@ -1,6 +1,10 @@
-*Task 0: setup
 clear all
 macro drop all
+version 17.0
+clear all
+set linesize 120
+set more off
+capture log close
 
 global root ""
 
