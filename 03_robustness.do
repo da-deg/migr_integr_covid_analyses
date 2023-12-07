@@ -16,7 +16,7 @@ global OUTPUT "${WD}/figures_tables"												// define the working directory 
 
 capture mkdir "${OUTPUT}"
 
-cd ${WD}
+cd "${WD}"
 
 
 
